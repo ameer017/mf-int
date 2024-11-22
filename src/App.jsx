@@ -1,8 +1,12 @@
 import { useState } from "react";
+import useGetTokensAndBalances from "./hooks/useGetTokensAndBalances";
+import { formatUnits } from "ethers";
 
 
 function App() {
   const [userAddress, setUserAdress] = useState("");
+
+  const { tokens, userAddress: currentAddress, isFetching } = useGetTokensAndBalances(userAddress);
 
   return (
     <div className="w-full min-h-screen bg-white flex flex-col p-4">
@@ -27,40 +31,39 @@ function App() {
             />
           </div>
         </div>
-        <div>
-          <button
-            type="button"
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Get Balance
-          </button>
-        </div>
       </div>
 
       {/* cards of balances */}
-      <h1 className="text-indigo-600 mt-14 mb-3 text-xl font-medium text-center">List of Tokens</h1>
+      <h1 className="text-indigo-600 mt-14 text-xl font-medium text-center">List of Tokens</h1>
+      <h3 className="text-gray-800 mb-3 text-sm text-center">Current User Account: {currentAddress}</h3>
       <main className=" sm:mx-auto sm:w-full sm:max-w-xl space-y-6">
-        <div className="rounded-md shadow-md border bg-white p-6 flex flex-col">
-          <div className="relative flex items-center gap-x-4">
-            <img alt="" src={``} className="size-10 rounded-full bg-gray-50" />
-            <div className="text-sm/6">
-              <p className="font-semibold flex text-gray-900">
-                Address: <span className="text-gray-600">{"0x0000000000000000000000000000000000000000"}</span>
-              </p>
-              <div className="flex gap-4">
-                <p className="font-semibold text-gray-900">
-                  Name: <span className="text-gray-600">{"Lisk"}</span>
-                </p>
-                <p className="font-semibold text-gray-900">
-                  Symbol: <span className="text-gray-600">{"LSK"}</span>
-                </p>
-                <p className="font-semibold text-gray-900">
-                  Your balance: <span className="text-gray-600">{"5"}</span>
-                </p>
+        {
+          isFetching ? <h2 className="text-indigo-600 mt-10 text-base font-medium text-center">Fetching Tokens...</h2> :
+            tokens.map((token) => (
+              <div key={token.address} className="rounded-md shadow-md border bg-white p-6 flex flex-col">
+                <div className="relative flex items-center gap-x-4">
+                  {token.logoURI && <img alt={`${token.name} logo`} src={token.logoURI} className="size-10 rounded-full bg-gray-50" />}
+                  <div className="text-sm/6">
+                    <p className="font-semibold flex text-gray-900">
+                      Address: <span className="text-gray-600">{token.address}</span>
+                    </p>
+                    <div className="flex gap-4">
+                      <p className="font-semibold text-gray-900">
+                        Name: <span className="text-gray-600">{token.name}</span>
+                      </p>
+                      <p className="font-semibold text-gray-900">
+                        Symbol: <span className="text-gray-600">{token.symbol}</span>
+                      </p>
+                      <p className="font-semibold text-gray-900">
+                        Your balance: <span className="text-gray-600">{formatUnits(token.balance, token.decimals)}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
+            ))
+        }
+
       </main>
     </div>
   )

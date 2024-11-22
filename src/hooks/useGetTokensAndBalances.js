@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { token as tokenList } from "../data/tokenlist.json";
+import tokenList from "../data/tokenlist.json";
 import { Contract, Interface, isAddress, ZeroAddress } from "ethers";
 import erc20ABI from "../ABI/erc20.json";
 import multiCall2ABI from "../ABI/multicall2.json";
@@ -8,6 +8,7 @@ import { JsonRpcProvider } from "ethers";
 const mainnetTokens = tokenList.filter((t) => t.chainId === 1);
 const useGetTokensAndBalances = (address) => {
   const [tokens, setTokens] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
 
   const tokenAddresses = useMemo(() => mainnetTokens.map((t) => t.address), []);
 
@@ -39,6 +40,8 @@ const useGetTokensAndBalances = (address) => {
         provider
       );
 
+      setIsFetching(true);
+
       // eslint-disable-next-line no-unused-vars
       const [_, balancesResult] = await multiCallContract.aggregate.staticCall(
         calls
@@ -54,10 +57,11 @@ const useGetTokensAndBalances = (address) => {
       }));
 
       setTokens(newTokensObj);
+      setIsFetching(false);
     })();
   }, [calls, intface]);
 
-  return { tokens, userAddress };
+  return { tokens, userAddress, isFetching };
 };
 
 export default useGetTokensAndBalances;
